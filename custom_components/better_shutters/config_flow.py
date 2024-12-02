@@ -17,7 +17,6 @@ from .const import (
     DOMAIN,
     CONF_BASE_COVER,
     CONF_SCHEDULE,
-    DEFAULT_NAME,
     CONF_TIME,
     CONF_POSITION,
 )
@@ -71,7 +70,7 @@ class BetterShuttersConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         data_schema = vol.Schema(
             {
-                vol.Required(CONF_NAME, default=DEFAULT_NAME): str,
+                vol.Required(CONF_NAME): str,
                 vol.Required(CONF_BASE_COVER): cover_entities,
             }
         )

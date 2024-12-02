@@ -29,7 +29,6 @@ from .const import (
     CONF_SCHEDULE,
     CONF_TIME,
     CONF_POSITION,
-    DEFAULT_NAME,
     DOMAIN,
 )
 
@@ -43,7 +42,7 @@ SCHEDULE_ENTRY = vol.Schema({
 PLATFORM_SCHEMA = cv.PLATFORM_SCHEMA.extend(
     {
         vol.Required(CONF_BASE_COVER): cv.entity_id,
-        vol.Optional(CONF_NAME, default=DEFAULT_NAME): cv.string,
+        vol.Required(CONF_NAME): cv.string,
         vol.Required(CONF_SCHEDULE): vol.All(cv.ensure_list, [SCHEDULE_ENTRY]),
     }
 )
