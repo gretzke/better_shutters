@@ -121,7 +121,14 @@ class BetterShutterCover(CoverEntity):
     def current_cover_position(self):
         """Return current position of cover."""
         state = self._hass.states.get(self._base_cover)
-        return state.attributes.get(ATTR_POSITION) if state else None
+        if not state:
+            return None
+        
+        # For non-positionable covers, convert state to position
+        if not self.supported_features & CoverEntityFeature.SET_POSITION:
+            return 0 if state.state == STATE_CLOSED else 100
+        
+        return state.attributes.get(ATTR_POSITION)
 
     async def async_open_cover(self, **kwargs: Any) -> None:
         """Open the cover."""
@@ -137,6 +144,15 @@ class BetterShutterCover(CoverEntity):
 
     async def async_set_cover_position(self, **kwargs: Any) -> None:
         """Move the cover to a specific position."""
+        if not self.supported_features & CoverEntityFeature.SET_POSITION:
+            # For non-positionable covers, convert position to open/close
+            position = kwargs.get(ATTR_POSITION, 0)
+            if position > 50:
+                await self.async_open_cover()
+            else:
+                await self.async_close_cover()
+            return
+
         if ATTR_POSITION in kwargs:
             await self._hass.services.async_call(
                 "cover",
