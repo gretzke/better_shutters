@@ -27,10 +27,15 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     """Validate the user input allows us to connect."""
     # Verify that the selected cover exists
     entity_registry = er.async_get(hass)
-    if not entity_registry.async_get(data[CONF_BASE_COVER]):
+    base_entity = entity_registry.async_get(data[CONF_BASE_COVER])
+    if not base_entity:
         raise ValueError("Selected cover does not exist")
     
-    return {"title": data[CONF_NAME]}
+    # Include the area_id in the return data
+    return {
+        "title": data[CONF_NAME],
+        "area_id": base_entity.area_id
+    }
 
 class BetterShuttersConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Better Shutters."""
@@ -56,7 +61,15 @@ class BetterShuttersConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 info = await validate_input(self.hass, user_input)
                 await self.async_set_unique_id(f"{DOMAIN}_{user_input[CONF_BASE_COVER]}")
                 self._abort_if_unique_id_configured()
-                return self.async_create_entry(title=info["title"], data=user_input)
+                
+                # Create the entry with the area_id
+                return self.async_create_entry(
+                    title=info["title"],
+                    data={
+                        **user_input,
+                        "area_id": info["area_id"]
+                    }
+                )
             except ValueError:
                 errors["base"] = "invalid_cover"
             except Exception:  # pylint: disable=broad-except

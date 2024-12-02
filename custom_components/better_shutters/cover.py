@@ -23,6 +23,7 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers import entity_registry as er
 
 from .const import (
     CONF_BASE_COVER,
@@ -58,7 +59,21 @@ async def async_setup_entry(
     base_cover = config[CONF_BASE_COVER]
     schedule = config_entry.options.get(CONF_SCHEDULE, [])
 
-    async_add_entities([BetterShutterCover(hass, name, base_cover, schedule)])
+    # Get the entity registry
+    entity_registry = er.async_get(hass)
+    
+    # Get the base cover entity entry
+    base_entity = entity_registry.async_get(base_cover)
+    
+    cover = BetterShutterCover(hass, name, base_cover, schedule)
+    async_add_entities([cover])
+
+    # If the base cover has an area, set the same area for our cover
+    if base_entity and base_entity.area_id:
+        entity_registry.async_update_entity(
+            cover.entity_id,
+            area_id=base_entity.area_id
+        )
 
 class BetterShutterCover(CoverEntity):
     """Representation of a Better Shutter cover."""
@@ -158,3 +173,16 @@ class BetterShutterCover(CoverEntity):
                 # Reschedule for tomorrow
                 self._schedule_update(entry)
                 break 
+
+    @property
+    def device_info(self):
+        """Return device info."""
+        # Get the entity registry
+        entity_registry = er.async_get(self._hass)
+        base_entity = entity_registry.async_get(self._base_cover)
+        
+        return {
+            "identifiers": {(DOMAIN, self._attr_unique_id)},
+            "name": self._name,
+            "via_device": (DOMAIN, base_entity.device_id) if base_entity and base_entity.device_id else None,
+        }
