@@ -22,6 +22,7 @@ from homeassistant.helpers import entity_platform
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.config_entries import ConfigEntry
 
 from .const import (
     CONF_BASE_COVER,
@@ -47,18 +48,18 @@ PLATFORM_SCHEMA = cv.PLATFORM_SCHEMA.extend(
     }
 )
 
-async def async_setup_platform(
+async def async_setup_entry(
     hass: HomeAssistant,
-    config: ConfigType,
-    add_entities: AddEntitiesCallback,
-    discovery_info: Optional[DiscoveryInfoType] = None,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the Better Shutters cover."""
+    """Set up the Better Shutters cover from config entry."""
+    config = config_entry.data
     name = config[CONF_NAME]
     base_cover = config[CONF_BASE_COVER]
-    schedule = config[CONF_SCHEDULE]
+    schedule = config_entry.options.get(CONF_SCHEDULE, [])
 
-    add_entities([BetterShutterCover(hass, name, base_cover, schedule)])
+    async_add_entities([BetterShutterCover(hass, name, base_cover, schedule)])
 
 class BetterShutterCover(CoverEntity):
     """Representation of a Better Shutter cover."""

@@ -1,0 +1,32 @@
+{
+  "config": {
+    "title": "Better Shutters",
+    "step": {
+      "user": {
+        "title": "Better Shutters Setup",
+        "description": "Set up your Better Shutters integration",
+        "data": {
+          "name": "Name",
+          "base_cover": "Base Cover Entity"
+        }
+      }
+    },
+    "error": {
+      "unknown": "Unexpected error"
+    }
+  },
+  "options": {
+    "step": {
+      "schedule": {
+        "title": "Schedule Configuration",
+        "description": "Current schedule:\n{current_schedule}\n\nAdd new entries or remove existing ones. Check 'finish' when done.",
+        "data": {
+          "remove_entry": "Remove Entry",
+          "time": "Time",
+          "position": "Position",
+          "finish": "Finish configuration"
+        }
+      }
+    }
+  }
+}
